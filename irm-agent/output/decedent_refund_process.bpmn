@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1" targetNamespace="http://irs.gov/irm/21.6.6">
+  <process id="Process_DecedentRefund" name="Processing Decedent Account Refunds" isExecutable="false">
+    <startEvent id="StartEvent_1" name="Form 1310 received (CP 01H / Letter 12C)" />
+    <exclusiveGateway id="Gateway_1" name="Surviving spouse joint return?" />
+    <task id="Task_1" name="Issue the refund in both names without requiring Form 1310."><documentation>IRM 21.6.6.2.21.2: a Form 1310 is not required and the refund may be issued in both names</documentation></task>
+    <exclusiveGateway id="Gateway_2" name="Court-appointed representative documentation?" />
+    <task id="Task_2" name="Require Form 1310 and court certificate together; if court certificate missing, correspond to request documentation."><documentation>IRM 21.6.6.2.21.2: both the Form 1310
+and the court certificate must be received together</documentation></task>
+    <exclusiveGateway id="Gateway_3" name="Minus-X freeze suspend and release?" />
+    <task id="Task_3" name="Suspend the case until the freeze has posted, then release the refund."><documentation>IRM 21.6.6.2.21.2: suspend the case until the freeze has posted and
+then release the refund</documentation></task>
+    <exclusiveGateway id="Gateway_4" name="Current year systemic release via TC 971 AC 807?" />
+    <task id="Task_4" name="Input TC 971 AC 807 to release the refund systemically."><documentation>IRM 21.6.6.2.21.2: input TC 971
+AC 807 to release the refund systemically</documentation></task>
+    <exclusiveGateway id="Gateway_5" name="Prior year manual refund?" />
+    <task id="Task_5" name="Issue a manual refund; perfect Form 1310 with the tax year."><documentation>IRM 21.6.6.2.21.2: considered prior year and a manual refund is
+required</documentation></task>
+    <exclusiveGateway id="Gateway_6" name="CII case note?" />
+    <task id="Task_6" name="Do not refile Form 1310; leave a case note documenting the action taken."><documentation>IRM 21.6.6.2.21.2: there is no need to refile the Form 1310, but leave a
+case note</documentation></task>
+    <endEvent id="EndEvent_1" name="Refund processed" />
+    <sequenceFlow id="flow_StartEvent_1_Gateway_1" sourceRef="StartEvent_1" targetRef="Gateway_1" />
+    <sequenceFlow id="flow_Gateway_1_Task_1" sourceRef="Gateway_1" targetRef="Task_1" name="yes"><conditionExpression xsi:type="tFormalExpression">claim.claimant_type == "surviving_spouse" AND return.joint == True</conditionExpression></sequenceFlow>
+    <sequenceFlow id="flow_Task_1_EndEvent_1" sourceRef="Task_1" targetRef="EndEvent_1" />
+    <sequenceFlow id="flow_Gateway_1_Gateway_2" sourceRef="Gateway_1" targetRef="Gateway_2" />
+    <sequenceFlow id="flow_Gateway_2_Task_2" sourceRef="Gateway_2" targetRef="Task_2" name="yes"><conditionExpression xsi:type="tFormalExpression">claim.court_appointed_representative == True</conditionExpression></sequenceFlow>
+    <sequenceFlow id="flow_Task_2_EndEvent_1" sourceRef="Task_2" targetRef="EndEvent_1" />
+    <sequenceFlow id="flow_Gateway_2_Gateway_3" sourceRef="Gateway_2" targetRef="Gateway_3" />
+    <sequenceFlow id="flow_Gateway_3_Task_3" sourceRef="Gateway_3" targetRef="Task_3" name="yes"><conditionExpression xsi:type="tFormalExpression">account.minus_x_freeze_pending == True AND refund.systemic_criteria_met == True</conditionExpression></sequenceFlow>
+    <sequenceFlow id="flow_Task_3_EndEvent_1" sourceRef="Task_3" targetRef="EndEvent_1" />
+    <sequenceFlow id="flow_Gateway_3_Gateway_4" sourceRef="Gateway_3" targetRef="Gateway_4" />
+    <sequenceFlow id="flow_Gateway_4_Task_4" sourceRef="Gateway_4" targetRef="Task_4" name="yes"><conditionExpression xsi:type="tFormalExpression">refund.tax_year_status == "current_year" AND procedure.tc971_ac807_applies == True</conditionExpression></sequenceFlow>
+    <sequenceFlow id="flow_Task_4_EndEvent_1" sourceRef="Task_4" targetRef="EndEvent_1" />
+    <sequenceFlow id="flow_Gateway_4_Gateway_5" sourceRef="Gateway_4" targetRef="Gateway_5" />
+    <sequenceFlow id="flow_Gateway_5_Task_5" sourceRef="Gateway_5" targetRef="Task_5" name="yes"><conditionExpression xsi:type="tFormalExpression">refund.tax_year_status == "prior_year"</conditionExpression></sequenceFlow>
+    <sequenceFlow id="flow_Task_5_EndEvent_1" sourceRef="Task_5" targetRef="EndEvent_1" />
+    <sequenceFlow id="flow_Gateway_5_Gateway_6" sourceRef="Gateway_5" targetRef="Gateway_6" />
+    <sequenceFlow id="flow_Gateway_6_Task_6" sourceRef="Gateway_6" targetRef="Task_6" name="yes"><conditionExpression xsi:type="tFormalExpression">case.cii == True</conditionExpression></sequenceFlow>
+    <sequenceFlow id="flow_Task_6_EndEvent_1" sourceRef="Task_6" targetRef="EndEvent_1" />
+  </process>
+</definitions>

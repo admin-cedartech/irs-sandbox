@@ -1,0 +1,158 @@
+{
+  "process_name": "Processing Decedent Account Refunds",
+  "rules": [
+    {
+      "rule_id": "R-001",
+      "name": "Surviving spouse joint return",
+      "description": "Surviving spouse filing a joint return does not need Form 1310; refund may be issued in both names.",
+      "conditions": [
+        {
+          "fact": "claim.claimant_type",
+          "operator": "==",
+          "value": "surviving_spouse",
+          "description": "Claimant is a surviving spouse"
+        },
+        {
+          "fact": "return.joint",
+          "operator": "==",
+          "value": true,
+          "description": "Original or amended joint return"
+        }
+      ],
+      "action": "Issue the refund in both names without requiring Form 1310.",
+      "source_reference": "IRM 21.6.6.2.21.2",
+      "source_quote": "a Form 1310 is not required and the refund may be issued in both names",
+      "confidence": 0.9,
+      "grounded": true,
+      "flagged_for_review": false,
+      "review_reason": null
+    },
+    {
+      "rule_id": "R-002",
+      "name": "Court-appointed representative documentation",
+      "description": "Court-appointed personal representative must submit Form 1310 and court certificate together; otherwise correspond to request it.",
+      "conditions": [
+        {
+          "fact": "claim.court_appointed_representative",
+          "operator": "==",
+          "value": true,
+          "description": "Claimant is a court-appointed personal representative"
+        }
+      ],
+      "action": "Require Form 1310 and court certificate together; if court certificate missing, correspond to request documentation.",
+      "source_reference": "IRM 21.6.6.2.21.2",
+      "source_quote": "both the Form 1310\nand the court certificate must be received together",
+      "confidence": 0.88,
+      "grounded": true,
+      "flagged_for_review": false,
+      "review_reason": null
+    },
+    {
+      "rule_id": "R-003",
+      "name": "Minus-X freeze suspend and release",
+      "description": "If a -X freeze will post and systemic refund criteria are met, suspend until freeze posts, then release.",
+      "conditions": [
+        {
+          "fact": "account.minus_x_freeze_pending",
+          "operator": "==",
+          "value": true,
+          "description": "-X freeze will be present after adjustment posts"
+        },
+        {
+          "fact": "refund.systemic_criteria_met",
+          "operator": "==",
+          "value": true,
+          "description": "Meets criteria for a systemic refund"
+        }
+      ],
+      "action": "Suspend the case until the freeze has posted, then release the refund.",
+      "source_reference": "IRM 21.6.6.2.21.2",
+      "source_quote": "suspend the case until the freeze has posted and\nthen release the refund",
+      "confidence": 0.85,
+      "grounded": true,
+      "flagged_for_review": false,
+      "review_reason": null
+    },
+    {
+      "rule_id": "R-004",
+      "name": "Current year systemic release via TC 971 AC 807",
+      "description": "For a current year refund where TC 971 AC 807 applies, input it to release systemically.",
+      "conditions": [
+        {
+          "fact": "refund.tax_year_status",
+          "operator": "==",
+          "value": "current_year",
+          "description": "Current year refund"
+        },
+        {
+          "fact": "procedure.tc971_ac807_applies",
+          "operator": "==",
+          "value": true,
+          "description": "TC 971 AC 807 procedure applies"
+        }
+      ],
+      "action": "Input TC 971 AC 807 to release the refund systemically.",
+      "source_reference": "IRM 21.6.6.2.21.2",
+      "source_quote": "input TC 971\nAC 807 to release the refund systemically",
+      "confidence": 0.86,
+      "grounded": true,
+      "flagged_for_review": false,
+      "review_reason": null
+    },
+    {
+      "rule_id": "R-005",
+      "name": "Prior year manual refund",
+      "description": "After the current year processing cycle ends, later cycles are prior year and require a manual refund.",
+      "conditions": [
+        {
+          "fact": "refund.tax_year_status",
+          "operator": "==",
+          "value": "prior_year",
+          "description": "Prior year (after current cycle ended)"
+        }
+      ],
+      "action": "Issue a manual refund; perfect Form 1310 with the tax year.",
+      "source_reference": "IRM 21.6.6.2.21.2",
+      "source_quote": "considered prior year and a manual refund is\nrequired",
+      "confidence": 0.84,
+      "grounded": true,
+      "flagged_for_review": false,
+      "review_reason": null
+    },
+    {
+      "rule_id": "R-006",
+      "name": "CII case note",
+      "description": "For CII cases, do not refile Form 1310 but leave a case note documenting the action.",
+      "conditions": [
+        {
+          "fact": "case.cii",
+          "operator": "==",
+          "value": true,
+          "description": "Case is a CII case"
+        }
+      ],
+      "action": "Do not refile Form 1310; leave a case note documenting the action taken.",
+      "source_reference": "IRM 21.6.6.2.21.2",
+      "source_quote": "there is no need to refile the Form 1310, but leave a\ncase note",
+      "confidence": 0.83,
+      "grounded": true,
+      "flagged_for_review": false,
+      "review_reason": null
+    }
+  ],
+  "metadata": {
+    "provider": "mock",
+    "model_id": null,
+    "source_chars": 1373,
+    "rules_returned_by_llm": 6,
+    "rules_accepted": 6,
+    "rules_flagged": 0,
+    "rules_dropped": 0,
+    "guardrails_applied": [
+      "constrained_prompt",
+      "schema_validation",
+      "source_grounding",
+      "confidence_threshold"
+    ]
+  }
+}
